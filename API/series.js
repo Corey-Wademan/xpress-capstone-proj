@@ -1,11 +1,13 @@
 const express = require('express');
 const seriesRouter = express.Router();
 const sqlite = require('sqlite3');
-const { ids } = require('webpack');
 const db = new sqlite.Database(process.env.TEST_DATABASE || './database.sqlite');
+const issuesRouter = require('./issues');
+
+seriesRouter.use('/:seriesId/issues', issuesRouter);
 
 seriesRouter.param('seriesId', (req, res, next, seriesId) => {
-    db.get(`SELECT * FROM Series WHERE Series.id = $seriesId`, { $seriesId: seriesId }, (err, series) => {
+    db.get(`SELECT * FROM Series WHERE Series.id = $seriesId`, {$seriesId: seriesId }, (err, series) => {
         if (err) {
             next(err)
         }
@@ -35,7 +37,7 @@ seriesRouter.post('/', (req, res, next) => {
     const description = req.body.series.description;
     if (!name || !description) {
         return res.sendStatus(400);
-    }
+    } 
 
     const query = `INSERT INTO Series (name, description) VALUES ($name, $description)`;
     const values = {
